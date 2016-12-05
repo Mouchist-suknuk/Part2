@@ -393,18 +393,113 @@ public class Parser {
 	}
 	
 	private void handle_SIMPLECOND() throws Exception{ 
+		this.derivations.add(40);
+		this.handle_EXPRARITH();
+		this.handle_COMP();
+		this.handle_EXPRARITH();
 	}
 	private void handle_COMP() throws Exception{ 
+		this.read();
+		switch (this.token.getType()) {
+		case EQUAL_COMPARE:
+			this.derivations.add(41);
+			this.match(LexicalUnit.EQUAL_COMPARE);
+			break;
+		case GREATER_EQUAL:
+			this.derivations.add(42);
+			this.match(LexicalUnit.EQUAL_COMPARE);
+			break;
+		case GREATER:
+			this.derivations.add(43);
+			this.match(LexicalUnit.EQUAL_COMPARE);
+			break;
+		case SMALLER_EQUAL:
+			this.derivations.add(44);
+			this.match(LexicalUnit.EQUAL_COMPARE);
+			break;
+		case SMALLER:
+			this.derivations.add(45);
+			this.match(LexicalUnit.EQUAL_COMPARE);
+			break;
+		case DIFFERENT:
+			this.derivations.add(46);
+			this.match(LexicalUnit.EQUAL_COMPARE);
+			break;
+		default:
+			throw new Exception("");
+		}
 	}
 	private void handle_DO() throws Exception{ 
+		this.read();
+		switch (this.token.getType()) {
+		case DO:
+			this.derivations.add(47);
+			this.match(LexicalUnit.DO);
+			this.read();
+			this.match(LexicalUnit.EQUAL);
+			this.read();
+			this.match(LexicalUnit.NUMBER);
+			this.read();
+			this.match(LexicalUnit.COMMA);
+			this.read();
+			this.match(LexicalUnit.NUMBER);
+			this.read();
+			this.match(LexicalUnit.ENDLINE);
+			this.handle_CODE();
+			this.read();
+			this.match(LexicalUnit.ENDDO);
+			break;
+		default:
+			throw new Exception("");
+		}
 	}
 	private void handle_PRINT() throws Exception{ 
+		this.read();
+		switch (this.token.getType()) {
+		case PRINT:
+			this.derivations.add(48);
+			this.match(LexicalUnit.PRINT);
+			this.read();
+			this.match(LexicalUnit.COMMA);
+			this.handle_VARLIST();
+			break;
+		default:
+			throw new Exception("");
+		}
 	}
 	private void handle_READ() throws Exception{ 
+		this.read();
+		switch (this.token.getType()) {
+		case READ:
+			this.derivations.add(49);
+			this.match(LexicalUnit.READ);
+			this.read();
+			this.match(LexicalUnit.COMMA);
+			this.handle_VARLIST();
+			break;
+		default:
+			throw new Exception("");
+		}
 	}
 	private void handle_EXPLIST() throws Exception{ 
+		this.handle_EXPRARITH();
+		this.handle_EXPLISTTAIL();
 	}
 	private void handle_EXPLISTTAIL() throws Exception{ 
+		this.read();
+		switch (this.token.getType()) {
+		case COMMA:
+			this.derivations.add(51);
+			this.match(LexicalUnit.COMMA);
+			this.handle_EXPLIST();
+			break;
+		case ENDLINE:
+			this.derivations.add(52);
+			this.unread();
+			break;
+		default:
+			throw new Exception("");
+		}
 	}
 
 	protected void match(LexicalUnit unit) throws Exception{
