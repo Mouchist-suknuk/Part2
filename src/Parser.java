@@ -5,7 +5,7 @@ import java.util.Stack;
 
 public class Parser {
 
-
+	private int lastRule = 0;
 	protected Symbol token;
 	protected ArrayList<Symbol> tokenList;
 	private int index = 0;
@@ -18,12 +18,19 @@ public class Parser {
 		this.derivations=new ArrayList<Integer>();
 		this.Rules=new HashMap<Integer, String>();
 		initActionTable();
+		//for (Symbol s : tokenList) {
+			//System.out.println(s);
+		//}
 	}
 	
 	protected void read() throws Exception{
-		if(this.inBuffer ) this.inBuffer = false;
+		if(this.inBuffer ) {
+			this.inBuffer = false;
+		}
 		else 
-		this.token = tokenList.get(index++);
+		{
+			this.token = tokenList.get(index++);
+		}
 	}
 	
 	protected void unread() throws Exception{
@@ -31,7 +38,7 @@ public class Parser {
 	}
 	
 	private void handle_PROGRAM() throws Exception{
-		this.derivations.add(1);
+		printRule(1);
 		this.read();
 		this.match(LexicalUnit.PROGRAM);
 		this.read();
@@ -43,13 +50,14 @@ public class Parser {
 		this.read();
 		this.match(LexicalUnit.END);
 		//$
-		this.match(null);
+		System.out.println("Program ended without error");
+		
 	}
 	private void handle_VARS() throws Exception{
 		this.read();
 		switch (this.token.getType()) {
 		case INTEGER:
-			this.derivations.add(2);
+			printRule(2);
 			this.match(LexicalUnit.INTEGER);
 			this.handle_VARLIST();
 			this.read();
@@ -61,16 +69,16 @@ public class Parser {
 		case DO:
 		case PRINT:
 		case READ:
-			this.derivations.add(3);
+			printRule(3);
 			this.unread();
 			break;
 		default:
-			handleError(this.derivations.size());
+			handleError();
 			
 		}
 	}
 	private void handle_VARLIST() throws Exception{
-		this.derivations.add(4);
+		printRule(4);
 		this.read();
 		this.match(LexicalUnit.VARNAME);
 		this.handle_VARLISTTAIL();
@@ -79,16 +87,16 @@ public class Parser {
 		this.read();
 		switch (this.token.getType()) {
 		case COMMA:
-			this.derivations.add(5);
+			printRule(5);
 			this.match(LexicalUnit.COMMA);
 			this.handle_VARLIST();
 			break;
 		case ENDLINE:
-			this.derivations.add(6);
+			printRule(6);
 			this.unread();
 			break;
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	private void handle_CODE() throws Exception{
@@ -99,7 +107,8 @@ public class Parser {
 		case DO:
 		case PRINT:
 		case READ:
-			this.derivations.add(7);
+			printRule(7);
+			this.unread();
 			this.handle_INSTRUCTION();
 			this.read();
 			this.match(LexicalUnit.ENDLINE);
@@ -109,43 +118,49 @@ public class Parser {
 		case ENDIF:
 		case ELSE:
 		case ENDDO:
-			this.derivations.add(8);
+			printRule(8);
 			this.unread();
 			break;
 		default:
-			handleError(this.derivations.size());
+			System.out.println(this.token.getType());
+			handleError();
 		}
 	}
 	private void handle_INSTRUCTION() throws Exception{
 		this.read();
 		switch (this.token.getType()) {
 		case VARNAME:
-			this.derivations.add(9);
+			printRule(9);
+			this.unread();
 			this.handle_ASSIGN();
 			break;
 		case IF: 
-			this.derivations.add(10);
+			printRule(10);
+			this.unread();
 			this.handle_IF();
 			break;
 		case DO:
-			this.derivations.add(11);
+			printRule(11);
+			this.unread();
 			this.handle_DO();
 			break;
 		case PRINT:
-			this.derivations.add(12);
+			printRule(12);
+			this.unread();
 			this.handle_PRINT();
 			break;
 		case READ:
-			this.derivations.add(13);
+			printRule(13);
+			this.unread();
 			this.handle_READ();
 			break;
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	
 	private void handle_ASSIGN() throws Exception{
-		this.derivations.add(14);
+		printRule(14);
 		this.read();
 		this.match(LexicalUnit.VARNAME);
 		this.read();
@@ -154,7 +169,7 @@ public class Parser {
 	}
 	
 	private void handle_EXPRARITH() throws Exception{
-		this.derivations.add(15);
+		printRule(15);
 		this.handle_EXPRARITHA();
 		this.handle_EXPRARITHTAIL();
 	}
@@ -164,7 +179,7 @@ public class Parser {
 		switch (this.token.getType()) {
 		case PLUS:
 		case MINUS:
-			this.derivations.add(16);
+			printRule(16);
 			this.handle_OPADDMINUS();
 			this.handle_EXPRARITHA();
 			this.handle_EXPLISTTAIL();
@@ -179,16 +194,17 @@ public class Parser {
 		case SMALLER_EQUAL:
 		case GREATER_EQUAL:
 		case DIFFERENT:
-			this.derivations.add(17);
+		case COMMA:
+			printRule(17);
 			this.unread();
 			break;
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	
 	private void handle_EXPRARITHA() throws Exception{
-		this.derivations.add(18);
+		printRule(18);
 		this.handle_EXPRARITHB();
 		this.handle_EXPRARITHATAIL();
 	}
@@ -198,7 +214,8 @@ public class Parser {
 		switch (this.token.getType()) {
 		case TIMES:
 		case DIVIDE:
-			this.derivations.add(19);
+			printRule(19);
+			this.unread();
 			this.handle_OPMULTIDIVIDE();
 			this.handle_EXPRARITHB();
 			this.handle_EXPRARITHATAIL();
@@ -216,11 +233,11 @@ public class Parser {
 		case GREATER_EQUAL:
 		case DIFFERENT:
 		case COMMA:
-			this.derivations.add(20);
+			printRule(20);
 			this.unread();
 			break;
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	
@@ -228,16 +245,16 @@ public class Parser {
 		this.read();
 		switch (this.token.getType()) {
 		case PLUS:
-			this.derivations.add(21);
+			printRule(21);
 			this.match(LexicalUnit.PLUS);
 			break;
 		case MINUS:
-			this.derivations.add(22);
+			printRule(22);
 			this.match(LexicalUnit.MINUS);
 			break;
 
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	
@@ -245,16 +262,16 @@ public class Parser {
 		this.read();
 		switch (this.token.getType()) {
 		case TIMES:
-			this.derivations.add(23);
+			printRule(23);
 			this.match(LexicalUnit.TIMES);
 			break;
 		case DIVIDE:
-			this.derivations.add(24);
+			printRule(24);
 			this.match(LexicalUnit.DIVIDE);
 			break;
 
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	
@@ -262,32 +279,32 @@ public class Parser {
 		this.read();
 		switch (this.token.getType()) {
 		case VARNAME:
-			this.derivations.add(25);
+			printRule(25);
 			this.match(LexicalUnit.VARNAME);
 			break;
 		case NUMBER:
-			this.derivations.add(26);
+			printRule(26);
 			this.match(LexicalUnit.NUMBER);
 			break;
 		case LEFT_PARENTHESIS:
-			this.derivations.add(27);
+			printRule(27);
 			this.match(LexicalUnit.LEFT_PARENTHESIS);
 			this.handle_EXPRARITH();
 			this.read();
 			this.match(LexicalUnit.RIGHT_PARENTHESIS);
 			break;
 		case MINUS:
-			this.derivations.add(28);
+			printRule(28);
 			this.match(LexicalUnit.MINUS);
 			this.handle_EXPRARITH();
 			break;
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	
 	private void handle_IF() throws Exception{
-		this.derivations.add(29);
+		printRule(29);
 		this.read();
 		this.match(LexicalUnit.IF);
 		this.read();
@@ -307,7 +324,7 @@ public class Parser {
 		this.read();
 		switch (this.token.getType()) {
 		case ELSE:
-			this.derivations.add(30);
+			printRule(30);
 			this.match(LexicalUnit.ELSE);
 			this.read();
 			this.match(LexicalUnit.ENDLINE);
@@ -316,20 +333,20 @@ public class Parser {
 			this.match(LexicalUnit.ENDIF);
 			break;
 		case ENDIF:
-			this.derivations.add(31);
+			printRule(31);
 			this.match(LexicalUnit.ENDIF);
 			break;
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	private void handle_COND() throws Exception{
-		this.derivations.add(32);
+		printRule(32);
 		this.handle_CONDA();
 		this.handle_CONDB();
 	}
 	private void handle_CONDA() throws Exception{
-		this.derivations.add(33);
+		printRule(33);
 		this.handle_CONDHEAD();
 		this.handle_SIMPLECOND();
 		this.handle_CONDATAIL();
@@ -339,18 +356,18 @@ public class Parser {
 		this.read();
 		switch (this.token.getType()) {
 		case NOT:
-			this.derivations.add(34);
+			printRule(34);
 			this.match(LexicalUnit.NOT);
 			break;
 		case VARNAME:
 		case NUMBER:
 		case LEFT_PARENTHESIS:
 		case MINUS:
-			this.derivations.add(35);
+			printRule(35);
 			this.unread();
 			break;
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	
@@ -358,7 +375,7 @@ public class Parser {
 		this.read();
 		switch (this.token.getType()) {
 		case AND:
-			this.derivations.add(36);
+			printRule(36);
 			this.match(LexicalUnit.AND);
 			this.handle_CONDHEAD();
 			this.handle_SIMPLECOND();
@@ -366,11 +383,11 @@ public class Parser {
 			break;
 		case OR:
 		case RIGHT_PARENTHESIS:
-			this.derivations.add(37);
+			printRule(37);
 			this.unread();
 			break;
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	
@@ -378,22 +395,22 @@ public class Parser {
 		this.read();
 		switch (this.token.getType()) {
 		case OR:
-			this.derivations.add(38);
+			printRule(38);
 			this.match(LexicalUnit.OR);
 			this.handle_CONDA();
 			this.handle_CONDB();
 			break;
 		case RIGHT_PARENTHESIS:
-			this.derivations.add(39);
+			printRule(39);
 			this.unread();
 			break;
 		default:
-			handleError(this.derivations.size());
+			handleError();
 		}
 	}
 	
 	private void handle_SIMPLECOND() throws Exception{ 
-		this.derivations.add(40);
+		printRule(40);
 		this.handle_EXPRARITH();
 		this.handle_COMP();
 		this.handle_EXPRARITH();
@@ -402,39 +419,41 @@ public class Parser {
 		this.read();
 		switch (this.token.getType()) {
 		case EQUAL_COMPARE:
-			this.derivations.add(41);
+			printRule(41);
 			this.match(LexicalUnit.EQUAL_COMPARE);
 			break;
 		case GREATER_EQUAL:
-			this.derivations.add(42);
-			this.match(LexicalUnit.EQUAL_COMPARE);
+			printRule(42);
+			this.match(LexicalUnit.GREATER_EQUAL);
 			break;
 		case GREATER:
-			this.derivations.add(43);
-			this.match(LexicalUnit.EQUAL_COMPARE);
+			printRule(43);
+			this.match(LexicalUnit.GREATER);
 			break;
 		case SMALLER_EQUAL:
-			this.derivations.add(44);
-			this.match(LexicalUnit.EQUAL_COMPARE);
+			printRule(44);
+			this.match(LexicalUnit.SMALLER_EQUAL);
 			break;
 		case SMALLER:
-			this.derivations.add(45);
-			this.match(LexicalUnit.EQUAL_COMPARE);
+			printRule(45);
+			this.match(LexicalUnit.SMALLER);
 			break;
 		case DIFFERENT:
-			this.derivations.add(46);
-			this.match(LexicalUnit.EQUAL_COMPARE);
+			printRule(46);
+			this.match(LexicalUnit.DIFFERENT);
 			break;
 		default:
-			throw new Exception("");
+			handleError();
 		}
 	}
 	private void handle_DO() throws Exception{ 
 		this.read();
 		switch (this.token.getType()) {
 		case DO:
-			this.derivations.add(47);
+			printRule(47);
 			this.match(LexicalUnit.DO);
+			this.read();
+			this.match(LexicalUnit.VARNAME);
 			this.read();
 			this.match(LexicalUnit.EQUAL);
 			this.read();
@@ -450,38 +469,39 @@ public class Parser {
 			this.match(LexicalUnit.ENDDO);
 			break;
 		default:
-			throw new Exception("");
+			handleError();
 		}
 	}
 	private void handle_PRINT() throws Exception{ 
 		this.read();
 		switch (this.token.getType()) {
 		case PRINT:
-			this.derivations.add(48);
+			printRule(48);
 			this.match(LexicalUnit.PRINT);
 			this.read();
 			this.match(LexicalUnit.COMMA);
-			this.handle_VARLIST();
+			this.handle_EXPLIST();
 			break;
 		default:
-			throw new Exception("");
+			handleError();
 		}
 	}
 	private void handle_READ() throws Exception{ 
 		this.read();
 		switch (this.token.getType()) {
 		case READ:
-			this.derivations.add(49);
+			printRule(49);
 			this.match(LexicalUnit.READ);
 			this.read();
 			this.match(LexicalUnit.COMMA);
 			this.handle_VARLIST();
 			break;
 		default:
-			throw new Exception("");
+			handleError();
 		}
 	}
-	private void handle_EXPLIST() throws Exception{ 
+	private void handle_EXPLIST() throws Exception{
+		printRule(50);
 		this.handle_EXPRARITH();
 		this.handle_EXPLISTTAIL();
 	}
@@ -489,31 +509,25 @@ public class Parser {
 		this.read();
 		switch (this.token.getType()) {
 		case COMMA:
-			this.derivations.add(51);
+			printRule(51);
 			this.match(LexicalUnit.COMMA);
 			this.handle_EXPLIST();
 			break;
 		case ENDLINE:
-			this.derivations.add(52);
+			printRule(52);
 			this.unread();
 			break;
 		default:
-			throw new Exception("");
+			handleError();
 		}
 	}
 
 	protected void match(LexicalUnit unit) throws Exception{
-		if(!this.token.getType().equals(unit)) this.handleError(this.derivations.size());
+		if(!this.token.getType().equals(unit)) this.handleError();
 	}
 	
 	public void parse() throws Exception {
 		this.handle_PROGRAM();
-		
-		//Output
-		for (Integer i: this.derivations)
-		{
-			System.out.println("["+i+"]"+ Rules.get(i));
-		}
 		
 	}
 	
@@ -574,8 +588,15 @@ public class Parser {
 	}
 	
 
-	private void handleError(int ruleNumber) throws Exception
+	private void printRule(int i)
 	{
-		throw new Exception("A syntax error occurs at rule ["+ruleNumber+"]");
+		System.out.println("["+i+"]"+ Rules.get(i));
+		lastRule = i;
+	}
+	
+	private void handleError() throws Exception
+	{
+		throw new Exception("A syntax error occurs at rule ["+lastRule+"]");
 	}
 }
+

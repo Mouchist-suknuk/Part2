@@ -1,0 +1,3 @@
+PROGRAM tt1
+	a = 3
+END

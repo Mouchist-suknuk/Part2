@@ -1,0 +1,9 @@
+PROGRAM example3
+
+	INTEGER i
+	i = 0
+
+	DO i = 0, 10
+		PRINT*, i
+	ENDDO
+END

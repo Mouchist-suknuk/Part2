@@ -1,0 +1,13 @@
+PROGRAM example2
+
+	INTEGER var1, var2
+	var1 = 12
+	var2 = 8
+	
+	IF (var1 .GE. var2) THEN
+		PRINT*, var1
+	ELSE
+		PRINT*, var2
+	ENDIF
+
+END

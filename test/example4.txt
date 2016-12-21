@@ -1,0 +1,7 @@
+program example4
+
+	integer i, j
+	i = 12*3
+	j = -(i/3)
+
+end
